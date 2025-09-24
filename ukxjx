@@ -1,0 +1,3 @@
+local args = {}
+
+game:GetService("ReplicatedStorage"):WaitForChild("Btools", 9e9):FireServer(unpack(args))
