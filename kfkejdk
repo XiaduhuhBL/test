@@ -1,0 +1,18 @@
+local InsertService = game:GetService("InsertService")
+local Workspace = game:GetService("Workspace")
+
+local assetId = 78895317546665
+
+local success, model = pcall(function()
+    return InsertService:LoadAsset(assetId)
+end)
+
+if success and model then
+    -- The loaded asset is a Model or Folder, parent its children to Workspace
+    for i, child in model:GetChildren() do
+        child.Parent = Workspace
+    end
+    model:Destroy() -- Clean up the container
+else
+    warn("Failed to load model with asset ID:", assetId)
+end
