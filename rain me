@@ -165,7 +165,7 @@ local function createRainToads()
                 -- 修复3：用newToad直接操作，替代遍历找零件（避免找错）
                 local newToad = CreatePart(CFrame.new(math.floor(xloc), math.random(cf, cf + 400), math.floor(zloc)), workspace)
                 if newToad then
-                    SetName(newToad, "rain T00k")
+                    SetName(newToad, "toad")
                     SetAnchor(false, newToad)
                     AddMesh(newToad)
                     SetMesh(newToad, "7234998844")
