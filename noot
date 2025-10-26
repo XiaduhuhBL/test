@@ -1,0 +1,107 @@
+local player = game.Players.LocalPlayer
+    local char = player.Character
+    local tool
+    for i,v in player:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+        end
+    end
+    for i,v in game.ReplicatedStorage:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+        end
+    end
+    
+    remote = tool.SyncAPI.ServerEndpoint
+    
+    -- [这里有很多F3X功能函数定义...]
+    
+    function Sky(id)
+        e = char.HumanoidRootPart.CFrame.x
+        f = char.HumanoidRootPart.CFrame.y
+        g = char.HumanoidRootPart.CFrame.z
+        CreatePart(CFrame.new(math.floor(e),math.floor(f),math.floor(g)) + Vector3.new(0,6,0),workspace)
+        for i,v in game.Workspace:GetDescendants() do
+            if v:IsA("BasePart") and v.CFrame.x == math.floor(e) and v.CFrame.z == math.floor(g) then
+                SetName(v,"Sky")
+                AddMesh(v)
+                SetMesh(v,"111891702759441")
+                SetTexture(v,id)
+                MeshResize(v,Vector3.new(4000,4000,4000))
+                SetLocked(v,true)
+            end
+        end
+    end
+    
+    Sky("382332426") -- 设置企鹅天空盒
+    
+    -- 在所有物体上贴企鹅贴图
+    function spam(id)
+        for i,v in game.workspace:GetDescendants() do
+            if v:IsA("BasePart") then
+                spawn(function()
+                    SetLocked(v,false)
+                    SpawnDecal(v,Enum.NormalId.Front)
+                    AddDecal(v,id,Enum.NormalId.Front)
+                    SpawnDecal(v,Enum.NormalId.Back)
+                    AddDecal(v,id,Enum.NormalId.Back)
+                    SpawnDecal(v,Enum.NormalId.Right)
+                    AddDecal(v,id,Enum.NormalId.Right)
+                    SpawnDecal(v,Enum.NormalId.Left)
+                    AddDecal(v,id,Enum.NormalId.Left)
+                    SpawnDecal(v,Enum.NormalId.Bottom)
+                    AddDecal(v,id,Enum.NormalId.Bottom)
+                    SpawnDecal(v,Enum.NormalId.Top)
+                    AddDecal(v,id,Enum.NormalId.Top)
+                end)
+            end
+        end
+    end
+    
+    spam("382332426") -- 在所有表面贴企鹅贴图
+    
+    -- 创建下落的企鹅模型
+    local function createRainToads()
+        while true do
+            wait(0.001) -- 快速生成
+            if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                local hrpcf = player.Character.HumanoidRootPart.CFrame
+                local x = hrpcf.x
+                local z = hrpcf.z
+                local randint = math.random(-600, 600)
+                local randint2 = math.random(-600, 600)
+                local xloc = randint + x
+                local zloc = randint2 + z
+                local cf = player.Character.HumanoidRootPart.CFrame.y + 400
+                
+                spawn(function()
+                    local newToad = CreatePart(CFrame.new(math.floor(xloc), math.random(cf, cf + 400), math.floor(zloc)))
+                    for i, v in game.Workspace:GetDescendants() do
+                        if v.Name == "Part" and v.Parent == workspace and v.CFrame.x == math.floor(xloc) and v.CFrame.z == math.floor(zloc) then
+                            SetName(v, "NOOT NOOT") -- 设置名称为NOOT NOOT
+                            SetAnchor(false, v)
+                            AddMesh(v)
+                            Resize(v, Vector3.new(1, 1, 1), v.CFrame)
+                            MeshResize(v, Vector3.new(200, 200, 200)) -- 巨大的企鹅
+                            SetMesh(v, "111891702759441") -- 使用天空盒网格
+                            SetTexture(v, "382332426") -- 企鹅贴图
+                            SetCollision(v, true)
+                            v.Orientation = Vector3.new(0, 0, 0)
+                            v.CFrame = v.CFrame + Vector3.new(0, 0, 0)
+                            local sound = Instance.new("Sound", v)
+                            sound.SoundId = "rbxassetid://153752123"
+                            sound.Volume = 0
+                            sound.PlayOnRemove = true
+                            sound:Destroy()
+                        end
+                    end
+                end)
+            else
+                wait(1)
+            end
+        end
+    end
+    
+    coroutine.wrap(createRainToads)()
+    Sky("95921788891849") -- 设置另一个天空盒
+end)
