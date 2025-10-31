@@ -16,27 +16,19 @@ mainFrame.Parent = screenGui
 local dragging = false
 local dragInput, mousePos, framePos
 
-mainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		mousePos = input.Position
-		framePos = mainFrame.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
+local function startDrag(input)
+	dragging = true
+	mousePos = input.Position
+	framePos = mainFrame.Position
+	input.Changed:Connect(function()
+		if input.UserInputState == Enum.UserInputState.End then
+			dragging = false
+		end
+	end)
+end
 
-mainFrame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-	if input == dragInput and dragging then
+local function dragUpdate(input)
+	if dragging then
 		local delta = input.Position - mousePos
 		mainFrame.Position = UDim2.new(
 			framePos.X.Scale,
@@ -44,6 +36,32 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 			framePos.Y.Scale,
 			framePos.Y.Offset + delta.Y
 		)
+	end
+end
+
+-- PC端拖动
+mainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		startDrag(input)
+	end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragUpdate(input)
+	end
+end)
+
+-- 手机端拖动
+mainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		startDrag(input)
+	end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.Touch then
+		dragUpdate(input)
 	end
 end)
 
@@ -143,4 +161,40 @@ end
 switchBtn.MouseButton1Click:Connect(function()
 	page1.Visible = not page1.Visible
 	page2.Visible = not page2.Visible
+end)
+
+-- 添加关闭按钮
+local closeBtn = Instance.new("TextButton", mainFrame)
+closeBtn.Text = "X"
+closeBtn.Size = UDim2.new(0, 40, 0, 40)
+closeBtn.Position = UDim2.new(1, -40, 0, 0)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.Font = Enum.Font.Gotham
+closeBtn.TextSize = 18
+
+closeBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = false
+end)
+
+-- 添加最小化按钮
+local minimizeBtn = Instance.new("TextButton", mainFrame)
+minimizeBtn.Text = "_"
+minimizeBtn.Size = UDim2.new(0, 40, 0, 40)
+minimizeBtn.Position = UDim2.new(1, -80, 0, 0)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+minimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+minimizeBtn.Font = Enum.Font.Gotham
+minimizeBtn.TextSize = 18
+
+local isMinimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+	isMinimized = not isMinimized
+	if isMinimized then
+		mainFrame.Size = UDim2.new(0, 100, 0, 50)  -- 最小化后界面尺寸
+		mainFrame.Position = UDim2.new(0.5, -50, 0.5, -25)
+	else
+		mainFrame.Size = UDim2.new(0, 400, 0, 500) -- 恢复原始尺寸
+		mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+	end
 end)
