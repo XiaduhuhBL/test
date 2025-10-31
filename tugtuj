@@ -39,28 +39,15 @@ local function dragUpdate(input)
 	end
 end
 
--- PC端拖动
+-- 触摸和鼠标拖动事件
 mainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		startDrag(input)
 	end
 end)
 
 mainFrame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragUpdate(input)
-	end
-end)
-
--- 手机端拖动
-mainFrame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch then
-		startDrag(input)
-	end
-end)
-
-mainFrame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.Touch then
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
 		dragUpdate(input)
 	end
 end)
@@ -191,10 +178,14 @@ local isMinimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
 	isMinimized = not isMinimized
 	if isMinimized then
-		mainFrame.Size = UDim2.new(0, 100, 0, 50)  -- 最小化后界面尺寸
-		mainFrame.Position = UDim2.new(0.5, -50, 0.5, -25)
+		-- 将面板缩小为按钮图标
+		mainFrame.Size = UDim2.new(0, 40, 0, 40)
+		mainFrame.Position = UDim2.new(0.5, -20, 0.5, -20)
+		minimizeBtn.Text = "▶" -- 恢复按钮
 	else
-		mainFrame.Size = UDim2.new(0, 400, 0, 500) -- 恢复原始尺寸
+		-- 恢复原始尺寸
+		mainFrame.Size = UDim2.new(0, 400, 0, 500)
 		mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+		minimizeBtn.Text = "_"
 	end
 end)
