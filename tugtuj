@@ -53,15 +53,18 @@ page1Frame.Size = UDim2.new(1, 0, 1, -100)
 page1Frame.Position = UDim2.new(0, 0, 0, 50)
 page1Frame.BackgroundTransparency = 1
 page1Frame.ScrollBarThickness = 10
-page1Frame.CanvasSize = UDim2.new(0, 0, 0, 700)  -- Adjust this size based on the number of buttons
 page1Frame.Parent = mainFrame
 
 -- Generate Buttons for Page 1 (200 buttons)
-for i = 1, 200 do
+local buttonHeight = 35  -- Height for each button (30px + some padding)
+local numButtonsPage1 = 200
+page1Frame.CanvasSize = UDim2.new(0, 0, 0, buttonHeight * numButtonsPage1)  -- Adjust CanvasSize based on number of buttons
+
+for i = 1, numButtonsPage1 do
     local button = Instance.new("TextButton")
     button.Text = "Button " .. i
     button.Size = UDim2.new(0, 380, 0, 30)
-    button.Position = UDim2.new(0, 0, 0, (i-1)*35)
+    button.Position = UDim2.new(0, 0, 0, (i - 1) * buttonHeight)
     button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     button.TextColor3 = Color3.fromRGB(0, 0, 0)
     button.Font = Enum.Font.Gotham
@@ -75,16 +78,18 @@ page2Frame.Size = UDim2.new(1, 0, 1, -100)
 page2Frame.Position = UDim2.new(0, 0, 0, 50)
 page2Frame.BackgroundTransparency = 1
 page2Frame.ScrollBarThickness = 10
-page2Frame.CanvasSize = UDim2.new(0, 0, 0, 350)  -- Adjust this size based on the number of buttons
 page2Frame.Visible = false  -- Start with Page 1 visible
 page2Frame.Parent = mainFrame
 
 -- Generate Buttons for Page 2 (100 buttons)
-for i = 1, 100 do
+local numButtonsPage2 = 100
+page2Frame.CanvasSize = UDim2.new(0, 0, 0, buttonHeight * numButtonsPage2)  -- Adjust CanvasSize for Page 2
+
+for i = 1, numButtonsPage2 do
     local button = Instance.new("TextButton")
-    button.Text = "Button " .. (i + 200)  -- The numbering starts after 200 for Page 2
+    button.Text = "Button " .. (i + numButtonsPage1)
     button.Size = UDim2.new(0, 380, 0, 30)
-    button.Position = UDim2.new(0, 0, 0, (i-1)*35)
+    button.Position = UDim2.new(0, 0, 0, (i - 1) * buttonHeight)
     button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     button.TextColor3 = Color3.fromRGB(0, 0, 0)
     button.Font = Enum.Font.Gotham
