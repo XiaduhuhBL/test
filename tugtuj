@@ -1,0 +1,137 @@
+-- Variables
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer.PlayerGui
+screenGui.Name = "F3X GUI"
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 400, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+mainFrame.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
+
+-- Background Image
+local backgroundImage = Instance.new("ImageLabel")
+backgroundImage.Size = UDim2.new(1, 0, 1, 0)
+backgroundImage.Position = UDim2.new(0, 0, 0, 0)
+backgroundImage.Image = "rbxassetid://111744606274727"
+backgroundImage.Parent = mainFrame
+
+-- Title Frame
+local titleFrame = Instance.new("Frame")
+titleFrame.Size = UDim2.new(1, 0, 0, 50)
+titleFrame.Position = UDim2.new(0, 0, 0, 0)
+titleFrame.BackgroundTransparency = 1
+titleFrame.Parent = mainFrame
+
+-- Title Label (Main Title)
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "T00kshaf1y's gui for f3x(v2)"
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.Position = UDim2.new(0, 0, 0, 10)
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.Parent = titleFrame
+
+-- Subtitle Label (Creator Info)
+local subTitleLabel = Instance.new("TextLabel")
+subTitleLabel.Text = "By Team T00kshaf1y"
+subTitleLabel.Size = UDim2.new(1, 0, 0, 20)
+subTitleLabel.Position = UDim2.new(0, 0, 0, 40)
+subTitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+subTitleLabel.BackgroundTransparency = 1
+subTitleLabel.Font = Enum.Font.Gotham
+subTitleLabel.TextSize = 14
+subTitleLabel.Parent = titleFrame
+
+-- Page 1 Button Frame (ScrollFrame)
+local page1Frame = Instance.new("ScrollingFrame")
+page1Frame.Size = UDim2.new(1, 0, 1, -100)
+page1Frame.Position = UDim2.new(0, 0, 0, 50)
+page1Frame.BackgroundTransparency = 1
+page1Frame.ScrollBarThickness = 10
+page1Frame.CanvasSize = UDim2.new(0, 0, 0, 700)  -- Adjust this size based on the number of buttons
+page1Frame.Parent = mainFrame
+
+-- Generate Buttons for Page 1 (200 buttons)
+for i = 1, 200 do
+    local button = Instance.new("TextButton")
+    button.Text = "Button " .. i
+    button.Size = UDim2.new(0, 380, 0, 30)
+    button.Position = UDim2.new(0, 0, 0, (i-1)*35)
+    button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextColor3 = Color3.fromRGB(0, 0, 0)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 14
+    button.Parent = page1Frame
+end
+
+-- Page 2 Button Frame (ScrollFrame)
+local page2Frame = Instance.new("ScrollingFrame")
+page2Frame.Size = UDim2.new(1, 0, 1, -100)
+page2Frame.Position = UDim2.new(0, 0, 0, 50)
+page2Frame.BackgroundTransparency = 1
+page2Frame.ScrollBarThickness = 10
+page2Frame.CanvasSize = UDim2.new(0, 0, 0, 350)  -- Adjust this size based on the number of buttons
+page2Frame.Visible = false  -- Start with Page 1 visible
+page2Frame.Parent = mainFrame
+
+-- Generate Buttons for Page 2 (100 buttons)
+for i = 1, 100 do
+    local button = Instance.new("TextButton")
+    button.Text = "Button " .. (i + 200)  -- The numbering starts after 200 for Page 2
+    button.Size = UDim2.new(0, 380, 0, 30)
+    button.Position = UDim2.new(0, 0, 0, (i-1)*35)
+    button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextColor3 = Color3.fromRGB(0, 0, 0)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 14
+    button.Parent = page2Frame
+end
+
+-- Left Corner Button
+local leftButton = Instance.new("TextButton")
+leftButton.Size = UDim2.new(0, 40, 0, 40)
+leftButton.Position = UDim2.new(0, 0, 0, 0)
+leftButton.Text = "Left"
+leftButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+leftButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+leftButton.Font = Enum.Font.Gotham
+leftButton.TextSize = 14
+leftButton.Parent = mainFrame
+
+-- Right Corner Button
+local rightButton = Instance.new("TextButton")
+rightButton.Size = UDim2.new(0, 40, 0, 40)
+rightButton.Position = UDim2.new(1, -40, 0, 0)
+rightButton.Text = "Right"
+rightButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+rightButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+rightButton.Font = Enum.Font.Gotham
+rightButton.TextSize = 14
+rightButton.Parent = mainFrame
+
+-- Button to switch between pages
+local pageSwitchButton = Instance.new("TextButton")
+pageSwitchButton.Text = "Switch Page"
+pageSwitchButton.Size = UDim2.new(0, 100, 0, 30)
+pageSwitchButton.Position = UDim2.new(0, 150, 0, 460)
+pageSwitchButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+pageSwitchButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+pageSwitchButton.Font = Enum.Font.Gotham
+pageSwitchButton.TextSize = 14
+pageSwitchButton.Parent = mainFrame
+
+-- Switch pages functionality
+pageSwitchButton.MouseButton1Click:Connect(function()
+    if page1Frame.Visible then
+        page1Frame.Visible = false
+        page2Frame.Visible = true
+    else
+        page1Frame.Visible = true
+        page2Frame.Visible = false
+    end
+end)
