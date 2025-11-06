@@ -21,7 +21,7 @@ if not tool then
 end
 
 if not tool then
-    warn("SyncAPI tool not found!")
+    warn("This game does not support image particle effects！")
     return
 end
 
@@ -164,67 +164,89 @@ function createParticleForPlayer(player)
     -- 创建零件 - 使用workspace作为父级，确保所有玩家可见
     CreatePart(spawnPosition, workspace)
     
-    -- 立即查找新创建的零件
-    for _, v in workspace:GetChildren() do
-        if v:IsA("Part") and (v.Position - spawnPosition.p).Magnitude < 2 then
-            local part = v
-            
-            -- 存储粒子引用
-            table.insert(activeParticles, part)
-            
-            -- 立即设置零件属性
-            Resize(part, Vector3.new(1.5, 1.5, 0.001), part.CFrame)
-            SetCollision(part, false)
-            SetTrans(part, 0.2)
-            SetAnchor(true, part)
-            
-            -- 立即添加贴花
-            SpawnDecal(part, Enum.NormalId.Front)
-            AddDecal(part, "11426291165", Enum.NormalId.Front)
-            
-            SpawnDecal(part, Enum.NormalId.Back)
-            AddDecal(part, "11426291165", Enum.NormalId.Back)
-            
-            -- 立即开始高速粒子动画
-            spawn(function()
-                local distance = 10  -- 移动距离
-                local steps = 10     -- 步骤数
+    -- 使用更可靠的零件检测方法
+    local partFound = false
+    local startTime = tick()
+    local maxWaitTime = 0.5 -- 最多等待0.5秒
+    
+    -- 循环等待直到找到零件或超时
+    while tick() - startTime < maxWaitTime and not partFound do
+        -- 查找新创建的零件
+        for _, v in workspace:GetChildren() do
+            if v:IsA("Part") and (v.Position - spawnPosition.p).Magnitude < 5 then -- 增加检测范围
+                local part = v
+                partFound = true
                 
-                for i = 1, steps do
-                    if part and part.Parent then
-                        -- 计算向外移动的方向
-                        local direction = (part.Position - torso.Position).Unit
-                        if direction.Magnitude == 0 then
-                            direction = Vector3.new(math.random()-0.5, math.random()-0.5, math.random()-0.5).Unit
+                -- 存储粒子引用
+                table.insert(activeParticles, part)
+                
+                -- 立即设置零件属性
+                Resize(part, Vector3.new(1.5, 1.5, 0.001), part.CFrame)
+                SetCollision(part, false)
+                SetTrans(part, 0.2)
+                SetAnchor(true, part)
+                
+                -- 立即添加贴花
+                SpawnDecal(part, Enum.NormalId.Front)
+                AddDecal(part, "11426291165", Enum.NormalId.Front)
+                
+                SpawnDecal(part, Enum.NormalId.Back)
+                AddDecal(part, "11426291165", Enum.NormalId.Back)
+                
+                -- 记录初始中心点位置，确保动画不受玩家移动影响
+                local initialCenter = torso.Position
+                
+                -- 立即开始高速粒子动画
+                spawn(function()
+                    local distance = 10  -- 移动距离
+                    local steps = 10     -- 步骤数
+                    
+                    for i = 1, steps do
+                        if part and part.Parent then
+                            -- 使用初始中心点计算方向，不受玩家移动影响
+                            local direction = (part.Position - initialCenter).Unit
+                            if direction.Magnitude == 0 then
+                                direction = Vector3.new(math.random()-0.5, math.random()-0.5, math.random()-0.5).Unit
+                            end
+                            
+                            local newCF = part.CFrame + direction * (distance / steps)
+                            
+                            -- 添加轻微的漂浮效果
+                            newCF = newCF + Vector3.new(0, math.sin(i/2) * 0.2, 0)
+                            
+                            -- 缓慢淡出
+                            SetTrans(part, 0.2 + (i/steps) * 0.8)
+                            
+                            Resize(part, part.Size, newCF)
+                            wait(0.01)  -- 极短的等待时间，保持高速动画
                         end
-                        
-                        local newCF = part.CFrame + direction * (distance / steps)
-                        
-                        -- 添加轻微的漂浮效果
-                        newCF = newCF + Vector3.new(0, math.sin(i/2) * 0.2, 0)
-                        
-                        -- 缓慢淡出
-                        SetTrans(part, 0.2 + (i/steps) * 0.8)
-                        
-                        Resize(part, part.Size, newCF)
-                        wait(0.01)  -- 极短的等待时间，保持高速动画
                     end
-                end
-                
-                -- 从活动粒子表中移除
-                for i, p in ipairs(activeParticles) do
-                    if p == part then
-                        table.remove(activeParticles, i)
-                        break
+                    
+                    -- 从活动粒子表中移除
+                    for i, p in ipairs(activeParticles) do
+                        if p == part then
+                            table.remove(activeParticles, i)
+                            break
+                        end
                     end
-                end
+                    
+                    -- 删除零件
+                    if part and part.Parent then
+                        delete(part)
+                    end
+                end)
                 
-                -- 删除零件
-                delete(part)
-            end)
-            
-            break
+                break
+            end
         end
+        
+        if not partFound then
+            wait(0.05) -- 等待50毫秒后再次尝试
+        end
+    end
+    
+    if not partFound then
+        warn("Unable to find newly created part")
     end
 end
 
@@ -241,7 +263,7 @@ local function particle()
             end
         end
         
-        wait(0.3)  -- 增加等待时间，降低零件生成频率
+        wait(0.1)  -- 增加等待时间，降低零件生成频率
     end
 end
 
