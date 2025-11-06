@@ -1,0 +1,242 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local tool
+
+-- 查找SyncAPI工具
+for i, v in Players.LocalPlayer:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
+        break
+    end
+end
+
+if not tool then
+    for i, v in game.ReplicatedStorage:GetDescendants() do
+        if v.Name == "SyncAPI" then
+            tool = v.Parent
+            break
+        end
+    end
+end
+
+if not tool then
+    warn("SyncAPI tool not found!")
+    return
+end
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+-- 包装远程调用函数
+function _(args)
+    remote:InvokeServer(unpack(args))
+end
+
+-- 创建零件的函数
+function CreatePart(cf, parent)
+    local args = {
+        [1] = "CreatePart",
+        [2] = "Normal",
+        [3] = cf,
+        [4] = parent
+    }
+    _(args)
+end
+
+-- 调整零件大小的函数
+function Resize(part, size, cf)
+    local args = {
+        [1] = "SyncResize",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["CFrame"] = cf,
+                ["Size"] = size
+            }
+        }
+    }
+    _(args)
+end
+
+-- 设置碰撞的函数
+function SetCollision(part, boolean)
+    local args = {
+        [1] = "SyncCollision",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["CanCollide"] = boolean
+            }
+        }
+    }
+    _(args)
+end
+
+-- 设置锚定的函数
+function SetAnchor(boolean, part)
+    local args = {
+        [1] = "SyncAnchor",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["Anchored"] = boolean
+            }
+        }
+    }
+    _(args)
+end
+
+-- 设置透明度的函数
+function SetTrans(part, int)
+    local args = {
+        [1] = "SyncMaterial",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["Transparency"] = int
+            }
+        }
+    }
+    _(args)
+end
+
+-- 创建贴花的函数
+function SpawnDecal(part, side)
+    local args = {
+        [1] = "CreateTextures",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["Face"] = side,
+                ["TextureType"] = "Decal"
+            }
+        }
+    }
+    _(args)
+end
+
+-- 添加贴花的函数
+function AddDecal(part, asset, side)
+    local args = {
+        [1] = "SyncTexture",
+        [2] = {
+            [1] = {
+                ["Part"] = part,
+                ["Face"] = side,
+                ["TextureType"] = "Decal",
+                ["Texture"] = "rbxassetid://".. asset
+            }
+        }
+    }
+    _(args)
+end
+
+-- 删除零件的函数
+function delete(part)
+    local args = {
+        [1] = "Remove",
+        [2] = {
+            [1] = part
+        }
+    }
+    remote:InvokeServer(unpack(args))
+end
+
+-- 为单个玩家创建粒子效果
+function createParticleForPlayer(player)
+    if not player.Character then return end
+    
+    local torso = player.Character:FindFirstChild("Torso") or player.Character:FindFirstChild("UpperTorso")
+    if not torso then return end
+    
+    -- 在躯干周围生成粒子
+    local offset = Vector3.new(
+        math.random(-3, 3),  -- X轴偏移
+        math.random(-2, 2),  -- Y轴偏移  
+        math.random(-3, 3)   -- Z轴偏移
+    )
+    
+    local spawnPosition = torso.CFrame * CFrame.new(offset)
+    
+    -- 创建零件 - 使用workspace作为父级，确保所有玩家可见
+    CreatePart(spawnPosition, workspace)
+    
+    -- 等待零件创建
+    wait(0.1)
+    
+    -- 查找新创建的零件
+    for _, v in workspace:GetChildren() do
+        if v:IsA("Part") and (v.Position - spawnPosition.p).Magnitude < 2 then
+            local part = v
+            
+            -- 设置零件属性
+            Resize(part, Vector3.new(2, 2, 0.001), part.CFrame)
+            SetCollision(part, false)
+            SetTrans(part, 0.3)
+            SetAnchor(true, part)
+            
+            -- 添加贴花
+            SpawnDecal(part, Enum.NormalId.Front)
+            AddDecal(part, "11426291165", Enum.NormalId.Front)
+            
+            SpawnDecal(part, Enum.NormalId.Back)
+            AddDecal(part, "11426291165", Enum.NormalId.Back)
+            
+            -- 粒子动画
+            local distance = 15  -- 向外移动的距离
+            local steps = 30     -- 动画步数
+            
+            for i = 1, steps do
+                if part and part.Parent then
+                    -- 计算向外移动的方向
+                    local direction = (part.Position - torso.Position).Unit
+                    if direction.Magnitude == 0 then
+                        direction = Vector3.new(math.random()-0.5, math.random()-0.5, math.random()-0.5).Unit
+                    end
+                    
+                    local newCF = part.CFrame + direction * (distance / steps)
+                    
+                    -- 添加轻微的漂浮效果
+                    newCF = newCF + Vector3.new(0, math.sin(i/5) * 0.5, 0)
+                    
+                    -- 缓慢淡出
+                    SetTrans(part, 0.3 + (i/steps) * 0.7)
+                    
+                    Resize(part, part.Size, newCF)
+                    wait(0.03)
+                end
+            end
+            
+            -- 删除零件
+            delete(part)
+            break
+        end
+    end
+end
+
+-- 主粒子效果循环
+local function particle()
+    while true do
+        wait(0.2)  -- 稍微降低频率以减少负载
+        
+        -- 为所有玩家创建粒子
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                spawn(function()
+                    createParticleForPlayer(player)
+                end)
+            end
+        end
+    end
+end
+
+-- 当新玩家加入时
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        -- 等待角色完全加载
+        wait(1)
+    end)
+end)
+
+-- 启动粒子效果
+coroutine.wrap(particle)()
