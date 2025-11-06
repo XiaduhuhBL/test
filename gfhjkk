@@ -185,10 +185,10 @@ function createParticleForPlayer(player)
             SpawnDecal(part, Enum.NormalId.Back)
             AddDecal(part, "11426291165", Enum.NormalId.Back)
             
-            -- 立即开始粒子动画
+            -- 立即开始高速粒子动画
             spawn(function()
-                local distance = 10  -- 减少移动距离，使动画更快
-                local steps = 10     -- 减少步骤数，使动画更快
+                local distance = 10  -- 移动距离
+                local steps = 10     -- 步骤数
                 
                 for i = 1, steps do
                     if part and part.Parent then
@@ -207,7 +207,7 @@ function createParticleForPlayer(player)
                         SetTrans(part, 0.2 + (i/steps) * 0.8)
                         
                         Resize(part, part.Size, newCF)
-                        wait(0.01)  -- 极短的等待时间
+                        wait(0.01)  -- 极短的等待时间，保持高速动画
                     end
                 end
                 
@@ -234,16 +234,14 @@ local function particle()
         -- 为所有玩家创建粒子
         for _, player in pairs(Players:GetPlayers()) do
             if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                -- 为每个玩家同时创建多个粒子
-                for i = 1, 3 do
-                    spawn(function()
-                        createParticleForPlayer(player)
-                    end)
-                end
+                -- 为每个玩家创建1个粒子，减少生成频率
+                spawn(function()
+                    createParticleForPlayer(player)
+                end)
             end
         end
         
-        wait(0.02)  -- 极短的等待时间，实现高速生成
+        wait(0.1)  -- 增加等待时间，降低零件生成频率
     end
 end
 
