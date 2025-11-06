@@ -241,7 +241,7 @@ local function particle()
             end
         end
         
-        wait(0.41)  -- 增加等待时间，降低零件生成频率
+        wait(0.8)  -- 增加等待时间，降低零件生成频率
     end
 end
 
