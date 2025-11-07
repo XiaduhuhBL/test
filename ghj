@@ -1,278 +1,100 @@
--- 修复版：使用F3X创建云朵并添加可见的粒子效果
-local Player = game.Players.LocalPlayer
-local char = Player.Character or Player.CharacterAdded:Wait()
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+--// Script: RC7 Cloud F3X \\ --
+--// Creator: ItsKittyyyGD \\ --
+-- CODE/SOURCE (OPEN):
 
--- 等待游戏加载完成
-wait(2)
-
--- 查找F3X工具
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
 local tool
-for _, v in pairs(Player.Backpack:GetChildren()) do
-    if v:FindFirstChild("SyncAPI") then
-        tool = v
-        break
+
+for _, v in player:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
     end
 end
 
-if not tool then
-    for _, v in pairs(Player.Character:GetChildren()) do
-        if v:IsA("Tool") and v:FindFirstChild("SyncAPI") then
-            tool = v
-            break
-        end
+for _, v in game.ReplicatedStorage:GetDescendants() do
+    if v.Name == "SyncAPI" then
+        tool = v.Parent
     end
 end
-
-if not tool then
-    warn("F3X工具未找到！请确保您拥有F3X建筑工具并且它在您的背包中。")
-    return
-end
-
-print("找到F3X工具: " .. tool.Name)
 
 local remote = tool.SyncAPI.ServerEndpoint
 
--- F3X API函数
-function InvokeF3X(args)
-    local success, result = pcall(function()
-        return remote:InvokeServer(unpack(args))
-    end)
-    if not success then
-        warn("F3X调用失败: " .. tostring(result))
-    end
-    return success, result
-end
-
-function CreatePart(cf, parent)
-    local args = {"CreatePart", "Normal", cf, parent}
-    return InvokeF3X(args)
+function _(args)
+    remote:InvokeServer(unpack(args))
 end
 
 function SetCollision(part, boolean)
     local args = {"SyncCollision", {{Part = part, CanCollide = boolean}}}
-    return InvokeF3X(args)
+    _(args)
 end
 
 function SetAnchor(boolean, part)
     local args = {"SyncAnchor", {{Part = part, Anchored = boolean}}}
-    return InvokeF3X(args)
+    _(args)
+end
+
+function CreatePart(cf, parent)
+    local args = {"CreatePart", "Normal", cf, parent}
+    _(args)
 end
 
 function AddMesh(part)
     local args = {"CreateMeshes", {{Part = part}}}
-    return InvokeF3X(args)
+    _(args)
 end
 
 function SetMesh(part, meshid)
     local args = {"SyncMesh", {{Part = part, MeshId = "rbxassetid://" .. meshid}}}
-    return InvokeF3X(args)
+    _(args)
 end
 
 function MeshResize(part, size)
     local args = {"SyncMesh", {{Part = part, Scale = size}}}
-    return InvokeF3X(args)
+    _(args)
 end
 
 function SetColor(part, color)
     local args = {"SyncColor", {{Part = part, Color = color, UnionColoring = false}}}
-    return InvokeF3X(args)
+    _(args)
 end
 
 function MovePart(part, cf)
     local args = {"SyncMove", {{Part = part, CFrame = cf}}}
-    return InvokeF3X(args)
+    _(args)
 end
 
-function SetTransparency(part, transparency)
-    local args = {"SyncTransparency", {{Part = part, Transparency = transparency}}}
-    return InvokeF3X(args)
-end
-
-function SetMaterial(part, material)
-    local args = {"SyncMaterial", {{Part = part, Material = material}}}
-    return InvokeF3X(args)
-end
-
--- 创建云朵函数
 function CreateCloud()
-    if not char or not char:FindFirstChild("Head") then
-        warn("角色或头部未找到")
-        return
-    end
-    
-    local head = char.Head
-    local cf = head.CFrame + Vector3.new(0, 20, 0)
-    
-    print("正在创建云朵...")
-    
-    -- 使用F3X创建云朵零件
-    local success, result = CreatePart(cf, workspace)
-    
-    if not success then
-        warn("创建零件失败")
-        return
-    end
-    
-    -- 等待并查找新创建的零件
-    local cloudPart
-    local startTime = tick()
-    
-    while tick() - startTime < 10 do -- 最多等待10秒
-        wait(0.1)
-        
-        -- 查找最近创建的零件
-        for _, part in pairs(workspace:GetChildren()) do
-            if part:IsA("Part") and not part:IsDescendantOf(char) then
-                if (part.Position - cf.Position).Magnitude < 5 then
-                    cloudPart = part
-                    break
+    local head = char:WaitForChild("Head")
+    local cf = head.CFrame + Vector3.new(0, 6, 0)
+    CreatePart(cf, workspace)
+    task.spawn(function()
+        repeat task.wait() until (function()
+            for _, v in workspace:GetDescendants() do
+                if v:IsA("BasePart") and (v.Position - cf.Position).Magnitude < 0.5 then
+                    SetAnchor(true, v)
+                    SetCollision(v, false)
+                    SetColor(v, BrickColor.new(333).Color)
+                    AddMesh(v)
+                    SetMesh(v, "111820358")
+                    MeshResize(v, Vector3.new(8, 8, 8))
+                    task.spawn(function()
+                        game:GetService("RunService").RenderStepped:Connect(function()
+                            if char and char:FindFirstChild("Head") then
+                                MovePart(v, char.Head.CFrame + Vector3.new(0, 6, 0))
+                            end
+                        end)
+                    end)
+                    return true
                 end
             end
-        end
-        
-        if cloudPart then
-            break
-        end
-    end
-    
-    if not cloudPart then
-        warn("未能找到创建的云朵零件")
-        return
-    end
-    
-    print("找到云朵零件，设置属性...")
-    
-    -- 设置云朵属性
-    SetAnchor(true, cloudPart)
-    SetCollision(cloudPart, false)
-    SetColor(cloudPart, BrickColor.new("Light blue").Color)
-    SetTransparency(cloudPart, 0.3)
-    
-    -- 添加云朵网格
-    AddMesh(cloudPart)
-    wait(0.2)
-    SetMesh(cloudPart, "111820358")
-    MeshResize(cloudPart, Vector3.new(8, 8, 8))
-    
-    -- 创建粒子效果
-    CreateParticleEffect(cloudPart)
-    
-    -- 让云朵跟随玩家
-    local followConnection
-    followConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if char and char:FindFirstChild("Head") and cloudPart and cloudPart.Parent then
-            local newCf = char.Head.CFrame + Vector3.new(0, 20, 0)
-            MovePart(cloudPart, newCf)
-        else
-            -- 如果角色或零件不存在，断开连接
-            if followConnection then
-                followConnection:Disconnect()
-            end
-        end
+        end)()
     end)
-    
-    print("云朵创建成功！")
 end
 
--- 创建粒子效果的函数
-function CreateParticleEffect(cloudPart)
-    print("创建粒子效果...")
-    
-    -- 创建多个小零件作为粒子
-    for i = 1, 15 do
-        local offset = Vector3.new(
-            math.random(-8, 8),
-            math.random(-3, 0),
-            math.random(-8, 8)
-        )
-        
-        local particleCf = cloudPart.CFrame + offset
-        
-        -- 创建粒子零件
-        CreatePart(particleCf, workspace)
-        
-        -- 等待零件创建
-        wait(0.1)
-        
-        -- 查找并设置粒子零件属性
-        for _, part in pairs(workspace:GetChildren()) do
-            if part:IsA("Part") and not part:IsDescendantOf(char) and 
-               (part.Position - particleCf.Position).Magnitude < 2 then
-                
-                SetAnchor(true, part)
-                SetCollision(part, false)
-                SetColor(part, Color3.new(1, 1, 1)) -- 白色粒子
-                SetTransparency(part, 0.5)
-                SetMaterial(part, Enum.Material.Neon) -- 使用Neon材质使其更亮
-                
-                -- 设置小尺寸
-                local sizeArgs = {"SyncResize", {{Part = part, Size = Vector3.new(0.8, 0.8, 0.8)}}}
-                InvokeF3X(sizeArgs)
-                
-                -- 添加球形网格
-                AddMesh(part)
-                wait(0.1)
-                local meshArgs = {"SyncMesh", {{Part = part, MeshType = Enum.MeshType.Sphere}}}
-                InvokeF3X(meshArgs)
-                
-                -- 让粒子跟随云朵移动并添加下落效果
-                spawn(function()
-                    local startTime = tick()
-                    local originalOffset = offset
-                    
-                    while part and part.Parent and cloudPart and cloudPart.Parent do
-                        local elapsed = tick() - startTime
-                        
-                        -- 计算下落偏移
-                        local fallOffset = Vector3.new(
-                            originalOffset.X,
-                            originalOffset.Y - (elapsed * 5), -- 下落速度
-                            originalOffset.Z
-                        )
-                        
-                        local newPos = cloudPart.Position + fallOffset
-                        MovePart(part, CFrame.new(newPos))
-                        
-                        -- 如果粒子下落太远，重新创建
-                        if (part.Position - cloudPart.Position).Y < -15 then
-                            break
-                        end
-                        
-                        wait(0.1)
-                    end
-                    
-                    -- 粒子消失后，创建新的粒子
-                    if part and part.Parent then
-                        part:Destroy()
-                    end
-                end)
-                
-                break
-            end
-        end
-    end
-    
-    -- 定期重新创建粒子效果
-    wait(3)
-    if cloudPart and cloudPart.Parent then
-        CreateParticleEffect(cloudPart)
-    end
-end
-
--- 延迟执行，确保所有资源加载完成
-wait(3)
-
--- 执行创建云朵
 CreateCloud()
 
--- 添加重新创建云朵的功能
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.R then
-        print("重新创建云朵...")
-        CreateCloud()
-    end
-end)
-
-print("云朵脚本已加载！按R键可以重新创建云朵")
+-- i can quit because theres more scripters f3x better than me. This can be my last script but,¿who knows?
