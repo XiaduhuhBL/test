@@ -1,0 +1,466 @@
+-- F3X自动建造咖啡店脚本 - 包含玩家模型
+local Player = game.Players.LocalPlayer
+local char = Player.Character or Player.CharacterAdded:Wait()
+
+-- 等待游戏加载
+wait(3)
+
+-- 查找F3X工具
+local tool
+for _, v in pairs(Player.Backpack:GetChildren()) do
+    if v:FindFirstChild("SyncAPI") then
+        tool = v
+        break
+    end
+end
+
+if not tool then
+    for _, v in pairs(Player.Character:GetChildren()) do
+        if v:IsA("Tool") and v:FindFirstChild("SyncAPI") then
+            tool = v
+            break
+        end
+    end
+end
+
+if not tool then
+    warn("F3X工具未找到！请确保您拥有F3X建筑工具并且它在您的背包中。")
+    return
+end
+
+print("找到F3X工具: " .. tool.Name)
+
+local remote = tool.SyncAPI.ServerEndpoint
+
+-- F3X API函数
+function InvokeF3X(args)
+    local success, result = pcall(function()
+        return remote:InvokeServer(unpack(args))
+    end)
+    if not success then
+        warn("F3X调用失败: " .. tostring(result))
+    end
+    return success, result
+end
+
+function CreatePart(cf, parent)
+    local args = {"CreatePart", "Normal", cf, parent}
+    return InvokeF3X(args)
+end
+
+function SetCollision(part, boolean)
+    local args = {"SyncCollision", {{Part = part, CanCollide = boolean}}}
+    return InvokeF3X(args)
+end
+
+function SetAnchor(boolean, part)
+    local args = {"SyncAnchor", {{Part = part, Anchored = boolean}}}
+    return InvokeF3X(args)
+end
+
+function AddMesh(part)
+    local args = {"CreateMeshes", {{Part = part}}}
+    return InvokeF3X(args)
+end
+
+function SetMesh(part, meshid)
+    local args = {"SyncMesh", {{Part = part, MeshId = "rbxassetid://" .. meshid}}}
+    return InvokeF3X(args)
+end
+
+function MeshResize(part, size)
+    local args = {"SyncMesh", {{Part = part, Scale = size}}}
+    return InvokeF3X(args)
+end
+
+function SetColor(part, color)
+    local args = {"SyncColor", {{Part = part, Color = color, UnionColoring = false}}}
+    return InvokeF3X(args)
+end
+
+function MovePart(part, cf)
+    local args = {"SyncMove", {{Part = part, CFrame = cf}}}
+    return InvokeF3X(args)
+end
+
+function SetTransparency(part, transparency)
+    local args = {"SyncTransparency", {{Part = part, Transparency = transparency}}}
+    return InvokeF3X(args)
+end
+
+function SetMaterial(part, material)
+    local args = {"SyncMaterial", {{Part = part, Material = material}}}
+    return InvokeF3X(args)
+end
+
+function ResizePart(part, size)
+    local args = {"SyncResize", {{Part = part, Size = size}}}
+    return InvokeF3X(args)
+end
+
+-- 等待零件创建的函数
+function WaitForPartCreation(cf, maxWaitTime)
+    local startTime = tick()
+    local part = nil
+    
+    while tick() - startTime < maxWaitTime do
+        wait(0.1)
+        
+        for _, p in pairs(workspace:GetChildren()) do
+            if p:IsA("Part") and not p:IsDescendantOf(char) then
+                if (p.Position - cf.Position).Magnitude < 5 then
+                    part = p
+                    break
+                end
+            end
+        end
+        
+        if part then break end
+    end
+    
+    return part
+end
+
+-- 创建基础零件
+function CreateBasicPart(cf, size, color, material, transparency)
+    CreatePart(cf, workspace)
+    local part = WaitForPartCreation(cf, 5)
+    
+    if part then
+        SetAnchor(true, part)
+        SetCollision(part, true)
+        SetColor(part, color or Color3.new(1, 1, 1))
+        SetMaterial(part, material or Enum.Material.Plastic)
+        SetTransparency(part, transparency or 0)
+        ResizePart(part, size or Vector3.new(1, 1, 1))
+    end
+    
+    return part
+end
+
+-- 创建玩家模型
+function CreatePlayerModel()
+    print("创建玩家模型...")
+    
+    local baseCf = char.Head.CFrame + char.Head.CFrame.LookVector * 20
+    
+    -- 在吧台后面创建玩家模型
+    local playerCf = baseCf + Vector3.new(10, 0, -4)
+    
+    -- 创建身体各部分
+    -- 身体
+    local torso = CreateBasicPart(
+        playerCf + Vector3.new(0, 2.5, 0),
+        Vector3.new(2, 3, 1),
+        Color3.fromRGB(0, 100, 200), -- 蓝色衣服
+        Enum.Material.Plastic
+    )
+    
+    -- 头部
+    local head = CreateBasicPart(
+        playerCf + Vector3.new(0, 4.5, 0),
+        Vector3.new(2, 2, 2),
+        Color3.fromRGB(255, 200, 150), -- 肤色
+        Enum.Material.Plastic
+    )
+    
+    -- 左臂
+    local leftArm = CreateBasicPart(
+        playerCf + Vector3.new(-1.5, 2.5, 0),
+        Vector3.new(1, 2.5, 1),
+        Color3.fromRGB(0, 100, 200), -- 蓝色衣服
+        Enum.Material.Plastic
+    )
+    
+    -- 右臂
+    local rightArm = CreateBasicPart(
+        playerCf + Vector3.new(1.5, 2.5, 0),
+        Vector3.new(1, 2.5, 1),
+        Color3.fromRGB(0, 100, 200), -- 蓝色衣服
+        Enum.Material.Plastic
+    )
+    
+    -- 左腿
+    local leftLeg = CreateBasicPart(
+        playerCf + Vector3.new(-0.5, 0, 0),
+        Vector3.new(1, 2.5, 1),
+        Color3.fromRGB(30, 30, 30), -- 黑色裤子
+        Enum.Material.Plastic
+    )
+    
+    -- 右腿
+    local rightLeg = CreateBasicPart(
+        playerCf + Vector3.new(0.5, 0, 0),
+        Vector3.new(1, 2.5, 1),
+        Color3.fromRGB(30, 30, 30), -- 黑色裤子
+        Enum.Material.Plastic
+    )
+    
+    -- 创建用户名标签
+    local nameTagCf = playerCf + Vector3.new(0, 5.5, 0)
+    local nameTag = CreateBasicPart(
+        nameTagCf,
+        Vector3.new(4, 0.5, 0.1),
+        Color3.fromRGB(255, 255, 255),
+        Enum.Material.Neon,
+        0.3
+    )
+    
+    -- 添加用户名文本（使用多个小零件拼出字母）
+    CreateUsernameText(nameTagCf + Vector3.new(0, 0.3, 0), "ttsghdvhfc2")
+    
+    return {
+        Torso = torso,
+        Head = head,
+        LeftArm = leftArm,
+        RightArm = rightArm,
+        LeftLeg = leftLeg,
+        RightLeg = rightLeg,
+        NameTag = nameTag
+    }
+end
+
+-- 创建用户名文本（简单版本）
+function CreateUsernameText(cf, username)
+    -- 这是一个简化的文本创建函数
+    -- 在实际应用中，您可能需要更复杂的方法来创建文本
+    
+    -- 这里我们只是创建一个简单的标签
+    local textPlate = CreateBasicPart(
+        cf,
+        Vector3.new(3, 0.5, 0.1),
+        Color3.fromRGB(0, 0, 0),
+        Enum.Material.Neon,
+        0.1
+    )
+    
+    -- 在实际应用中，您可以使用F3X的文本创建功能或创建更复杂的3D文本
+    print("创建用户名: " .. username)
+end
+
+-- 创建咖啡店
+function CreateCoffeeShop()
+    local baseCf = char.Head.CFrame + char.Head.CFrame.LookVector * 20
+    
+    print("开始建造咖啡店...")
+    
+    -- 1. 创建地基
+    print("创建地基...")
+    local floor = CreateBasicPart(
+        baseCf + Vector3.new(0, -2, 0),
+        Vector3.new(40, 1, 30),
+        Color3.fromRGB(120, 81, 45), -- 木地板颜色
+        Enum.Material.WoodPlanks
+    )
+    
+    -- 2. 创建墙壁
+    print("创建墙壁...")
+    -- 前墙（带窗户）
+    local frontWall1 = CreateBasicPart(
+        baseCf + Vector3.new(-15, 2, -15),
+        Vector3.new(10, 10, 1),
+        Color3.fromRGB(200, 170, 130),
+        Enum.Material.Brick
+    )
+    
+    local frontWall2 = CreateBasicPart(
+        baseCf + Vector3.new(5, 2, -15),
+        Vector3.new(10, 10, 1),
+        Color3.fromRGB(200, 170, 130),
+        Enum.Material.Brick
+    )
+    
+    -- 窗户
+    local window1 = CreateBasicPart(
+        baseCf + Vector3.new(-5, 2, -14.9),
+        Vector3.new(10, 6, 0.5),
+        Color3.fromRGB(150, 200, 255),
+        Enum.Material.Glass,
+        0.3
+    )
+    
+    -- 后墙
+    local backWall = CreateBasicPart(
+        baseCf + Vector3.new(0, 2, 15),
+        Vector3.new(40, 10, 1),
+        Color3.fromRGB(200, 170, 130),
+        Enum.Material.Brick
+    )
+    
+    -- 侧墙
+    local leftWall = CreateBasicPart(
+        baseCf + Vector3.new(-20, 2, 0),
+        Vector3.new(1, 10, 30),
+        Color3.fromRGB(200, 170, 130),
+        Enum.Material.Brick
+    )
+    
+    local rightWall = CreateBasicPart(
+        baseCf + Vector3.new(20, 2, 0),
+        Vector3.new(1, 10, 30),
+        Color3.fromRGB(200, 170, 130),
+        Enum.Material.Brick
+    )
+    
+    -- 3. 创建屋顶
+    print("创建屋顶...")
+    local roof = CreateBasicPart(
+        baseCf + Vector3.new(0, 7, 0),
+        Vector3.new(42, 1, 32),
+        Color3.fromRGB(80, 40, 20),
+        Enum.Material.Wood
+    )
+    
+    -- 4. 创建吧台
+    print("创建吧台...")
+    local counterBase = CreateBasicPart(
+        baseCf + Vector3.new(10, 0, -5),
+        Vector3.new(8, 2, 2),
+        Color3.fromRGB(150, 100, 50),
+        Enum.Material.Wood
+    )
+    
+    local counterTop = CreateBasicPart(
+        baseCf + Vector3.new(10, 1.5, -5),
+        Vector3.new(8.2, 0.5, 2.2),
+        Color3.fromRGB(200, 150, 100),
+        Enum.Material.Marble
+    )
+    
+    -- 5. 创建玩家模型（在吧台后面）
+    local playerModel = CreatePlayerModel()
+    
+    -- 6. 创建桌椅
+    print("创建桌椅...")
+    -- 桌子1
+    local table1Base = CreateBasicPart(
+        baseCf + Vector3.new(-10, 0, 0),
+        Vector3.new(6, 1, 3),
+        Color3.fromRGB(150, 100, 50),
+        Enum.Material.Wood
+    )
+    
+    local table1Top = CreateBasicPart(
+        baseCf + Vector3.new(-10, 1.2, 0),
+        Vector3.new(6.2, 0.3, 3.2),
+        Color3.fromRGB(200, 150, 100),
+        Enum.Material.Wood
+    )
+    
+    -- 椅子1
+    local chair1Seat = CreateBasicPart(
+        baseCf + Vector3.new(-13, 0.5, 0),
+        Vector3.new(1.5, 0.5, 1.5),
+        Color3.fromRGB(100, 70, 30),
+        Enum.Material.Wood
+    )
+    
+    local chair1Back = CreateBasicPart(
+        baseCf + Vector3.new(-13, 1.2, 0.7),
+        Vector3.new(1.5, 1.5, 0.2),
+        Color3.fromRGB(100, 70, 30),
+        Enum.Material.Wood
+    )
+    
+    -- 桌子2
+    local table2Base = CreateBasicPart(
+        baseCf + Vector3.new(0, 0, 5),
+        Vector3.new(4, 1, 4),
+        Color3.fromRGB(150, 100, 50),
+        Enum.Material.Wood
+    )
+    
+    local table2Top = CreateBasicPart(
+        baseCf + Vector3.new(0, 1.2, 5),
+        Vector3.new(4.2, 0.3, 4.2),
+        Color3.fromRGB(200, 150, 100),
+        Enum.Material.Wood
+    )
+    
+    -- 7. 创建咖啡机
+    print("创建咖啡机...")
+    local coffeeMachine = CreateBasicPart(
+        baseCf + Vector3.new(12, 1, -6),
+        Vector3.new(2, 1.5, 1),
+        Color3.fromRGB(50, 50, 50),
+        Enum.Material.Metal
+    )
+    
+    -- 8. 创建招牌
+    print("创建招牌...")
+    local signBase = CreateBasicPart(
+        baseCf + Vector3.new(0, 5, -16),
+        Vector3.new(8, 2, 0.5),
+        Color3.fromRGB(200, 50, 50),
+        Enum.Material.Neon
+    )
+    
+    -- 9. 创建灯光
+    print("创建灯光...")
+    -- 使用发光的零件模拟灯光
+    local light1 = CreateBasicPart(
+        baseCf + Vector3.new(0, 6, 0),
+        Vector3.new(2, 0.2, 2),
+        Color3.fromRGB(255, 255, 200),
+        Enum.Material.Neon
+    )
+    
+    local light2 = CreateBasicPart(
+        baseCf + Vector3.new(-15, 6, 0),
+        Vector3.new(2, 0.2, 2),
+        Color3.fromRGB(255, 255, 200),
+        Enum.Material.Neon
+    )
+    
+    local light3 = CreateBasicPart(
+        baseCf + Vector3.new(15, 6, 0),
+        Vector3.new(2, 0.2, 2),
+        Color3.fromRGB(255, 255, 200),
+        Enum.Material.Neon
+    )
+    
+    -- 10. 创建装饰植物
+    print("创建装饰...")
+    local plantBase = CreateBasicPart(
+        baseCf + Vector3.new(-18, 0, 10),
+        Vector3.new(1, 2, 1),
+        Color3.fromRGB(80, 50, 20),
+        Enum.Material.Wood
+    )
+    
+    local plantTop = CreateBasicPart(
+        baseCf + Vector3.new(-18, 2, 10),
+        Vector3.new(3, 3, 3),
+        Color3.fromRGB(50, 150, 50),
+        Enum.Material.Grass
+    )
+    
+    -- 11. 创建入口
+    print("创建入口...")
+    local entrance = CreateBasicPart(
+        baseCf + Vector3.new(0, 0, -15),
+        Vector3.new(6, 1, 1),
+        Color3.fromRGB(120, 81, 45),
+        Enum.Material.WoodPlanks
+    )
+    
+    print("咖啡店建造完成！包含玩家 ttsghdvhfc2 的模型")
+end
+
+-- 延迟执行，确保所有资源加载完成
+wait(5)
+
+-- 执行创建咖啡店
+CreateCoffeeShop()
+
+-- 添加重新创建咖啡店的功能
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.C then
+        print("重新创建咖啡店...")
+        CreateCoffeeShop()
+    end
+end)
+
+print("咖啡店建造脚本已加载！按C键可以重新创建咖啡店")
